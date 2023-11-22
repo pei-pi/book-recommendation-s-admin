@@ -8,6 +8,7 @@ package-lock.json
 README-zh.md
 tests/**/coverage/
 mock/*
+tests/*
 
 # Editor directories and files
 .idea
