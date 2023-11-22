@@ -10,7 +10,7 @@
     
                         <div class="message">
                             <span>图书数目</span>
-                            <span>100</span>
+                            <span>{{ this.booksSum }}</span>
                         </div>
     
                     </div>
@@ -22,7 +22,7 @@
                         </div>
                         <div class="message">
                             <span>用户总数</span>
-                            <span>100</span>
+                            <span>{{ this.userSum }}</span>
                         </div>
                     </div>
                 </el-col>
@@ -33,7 +33,7 @@
                         </div>
                         <div class="message">
                             <span>借阅中</span>
-                            <span>100</span>
+                            <span>{{ this.borrowSum }}</span>
                         </div>
                     </div>
                 </el-col>
@@ -56,16 +56,39 @@ export default {
     data(){
         return{
             booksSum:0,
+            userSum:0,
+            borrowSum:0,
         }
     },
     created(){
         this.loadBooksSum();
+        this.loadUsersSum();
+        this.loadBorrowSum();
+
     },
     methods:{
         loadBooksSum(){
             axiosInstance.get('/book/getBooksCount')
             .then(res => {
-                console.log(res)
+                this.booksSum = res.data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+        },
+        loadUsersSum(){
+            axiosInstance.get('/user/userCount')
+            .then(res => {
+                this.userSum = res.data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+        },
+        loadBorrowSum(){
+            axiosInstance.get('/book/getBorrowBooksCount')
+            .then(res => {
+                this.booksSum = res.data;
             })
             .catch(error => {
                 console.error('Error:', error);

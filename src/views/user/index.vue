@@ -19,7 +19,7 @@
             </el-table-column>
             <el-table-column label="id" width="180">
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ scope.row.userId }}</span>
+                    <span style="margin-left: 10px">{{ scope.$index + 1 }}</span>
                 </template>
             </el-table-column>
             <el-table-column label="姓名" width="180">
@@ -32,10 +32,15 @@
                     <span style="margin-left: 10px">{{ scope.row.userPassword }}</span>
                 </template>
             </el-table-column>
+            <el-table-column label="信誉分" width="180">
+                <template slot-scope="scope">
+                    <span style="margin-left: 10px">{{ scope.row.score }}</span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                    <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -56,6 +61,7 @@
                     <el-input show-password v-model="form.userPassword" placeholder="请输入密码" autocomplete="off"
                         style="width: 90%;"></el-input>
                 </el-form-item>
+
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
@@ -86,6 +92,7 @@ export default {
             form: {
                 username: '',
                 userPassword: '',
+                userScore: 0,
             },
             formLabelWidth: '120px',
 
@@ -118,6 +125,7 @@ export default {
         },
         // 批量删除用户
         batchDelete() {
+            console.log(this.selectUserList);
             return new Promise((resolve, reject) => {
                 batchDeleteUser(this.selectUserList).then((resolve) => {
                     console.log(resolve)
@@ -135,8 +143,32 @@ export default {
             console.log(index, row);
         },
         // 删除单个用户
-        handleDelete(index, row) {
-            console.log(index, row);
+        handleDelete(row) {
+            let id = row.userId;
+            this.$confirm('是否删除该用户?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$axios.delete("/user/deleteUserById?userId=" + id)
+                    .then((res) => {
+                        if (res.status === 200) {
+                            this.getUserForm();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('删除失败', error);
+                    });
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+            });
         },
         handleSizeChange(val) {
             console.log(`每页 ${val} 条`);
@@ -147,7 +179,6 @@ export default {
         // 添加用户确认按钮
         addUser() {
             this.dialogFormVisible = false;
-            console.log(this.form.username)
             this.$axios.post("/user/insertUser?username=" + this.form.username + "&userPassword=" + this.form.userPassword)
                 .then(response => {
                     if (response.data.code == 20000) {
@@ -157,6 +188,8 @@ export default {
                         });
                         this.getUserForm();
                     }
+                    this.username = '';
+                    this.userPassword = '';
                 })
                 .catch(error => {
                     console.error('请求失败：', error);
