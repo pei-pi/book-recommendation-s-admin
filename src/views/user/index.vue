@@ -68,13 +68,32 @@
                 <el-button type="primary" @click="addUser">确 定</el-button>
             </div>
         </el-dialog>
-
+        <!-- 编辑用户信息 -->
+        <el-dialog title="编辑用户" :visible.sync="dialogEditFormVisible">
+            <el-form :model="editForm" enctype="multipart/form-data">
+                <el-form-item label="用户姓名：" :label-width="formLabelWidth">
+                    <el-input v-model="editForm.username" placeholder="请输入姓名" autocomplete="off"
+                        style="width: 90%;"></el-input>
+                </el-form-item>
+                <el-form-item label="密码：" :label-width="formLabelWidth">
+                    <el-input show-password v-model="editForm.userPassword" placeholder="请输入密码" autocomplete="off"
+                        style="width: 90%;"></el-input>
+                </el-form-item>
+                <el-form-item label="信誉分" :label-width="formLabelWidth">
+                    <el-input v-model="editForm.userScore" placeholder="请输入信誉分" autocomplete="off"
+                        style="width: 90%;"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogEditFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="editUser(editForm.userId)">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import batchDeleteUser from '@/api/user'
-import axios from 'axios'
 export default {
     components: {
 
@@ -82,6 +101,7 @@ export default {
     data() {
         return {
             dialogFormVisible: false,
+            dialogEditFormVisible: false,
             search_content: '',
             value: [],
             selectedUsers: [], // 存储选择的用户
@@ -90,6 +110,13 @@ export default {
             currentPage4: 4,
             // 添加用户表单
             form: {
+                username: '',
+                userPassword: '',
+                userScore: 0,
+            },
+            // 编辑用户表单
+            editForm: {
+                userId: 0,
                 username: '',
                 userPassword: '',
                 userScore: 0,
@@ -140,7 +167,36 @@ export default {
         },
         // 编辑
         handleEdit(index, row) {
-            console.log(index, row);
+            this.$axios.get("/user/selectUserById?userId=" + row.userId)
+                .then((res) => {
+                    ({
+                        userId: this.editForm.userId,
+                        username: this.editForm.username,
+                        userPassword: this.editForm.userPassword,
+                        score: this.editForm.userScore
+                    } = res.data)
+                    this.dialogEditFormVisible = true
+                })
+                .catch(error => {
+                    console.error("请求失败" + error)
+                })
+        },
+        editUser(userId) {
+            this.$axios.post(`/user/updateUser?userId=${userId}&username=${this.editForm.username}&userPassword=${this.editForm.userPassword}&score=${this.editForm.userScore}`)
+                .then(res => {
+                    console.log(res)
+                    if (res.status === 200) {
+                        this.$message({
+                            message: '用户编辑成功！',
+                            type: 'success'
+                        });
+                        this.dialogEditFormVisible=false;
+                        this.getUserForm();
+                    }
+                })
+                .catch(error => {
+                    console.error('编辑失败：', error);
+                });
         },
         // 删除单个用户
         handleDelete(row) {
@@ -187,9 +243,9 @@ export default {
                             type: 'success'
                         });
                         this.getUserForm();
+                        this.form.username = '';
+                        this.form.userPassword = '';
                     }
-                    this.username = '';
-                    this.userPassword = '';
                 })
                 .catch(error => {
                     console.error('请求失败：', error);
