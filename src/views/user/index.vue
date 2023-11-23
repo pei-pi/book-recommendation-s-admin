@@ -8,7 +8,7 @@
             </el-col>
             <el-col :span="5"></el-col>
             <el-col :span="7" style=" position: flex;float: right;">
-                <el-input placeholder="请输入内容" size="medium" v-model="search_content" clearable
+                <el-input placeholder="请输入关键字" size="medium" v-model="search_content" clearable
                     style="width:80%;"></el-input>
                 <el-button class="search_bth" size="medium" icon="el-icon-search" @click="search"></el-button>
             </el-col>
@@ -180,7 +180,7 @@ export default {
         },
         // 搜索
         search() {
-
+            console.log(this.search_content)
         },
         // 编辑
         handleEdit(index, row) {
