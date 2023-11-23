@@ -143,23 +143,40 @@ export default {
         // 多选框改变触发事件
         handleSelectionChange(selection) {
             this.selectedUsers = selection;
-            let arr = new Array;
+            let arr = [];
             // selection是选择的行数据，其中包含了被勾选的用户信息
             for (let i = 0; i < this.selectedUsers.length; i++) {
-                arr[i] = this.selectedUsers[i].id;
+                arr[i] = this.selectedUsers[i].userId;
             }
             this.selectUserList = arr;
         },
         // 批量删除用户
         batchDelete() {
-            console.log(this.selectUserList);
-            return new Promise((resolve, reject) => {
-                batchDeleteUser(this.selectUserList).then((resolve) => {
-                    console.log(resolve)
-                }).catch(error => {
-                    reject(error)
+            this.$confirm('是否批量删除?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$axios.delete("user/delete", {
+                    data: this.selectUserList
                 })
-            })
+                    .then((res) => {
+                        if (res.status === 200) {
+                            this.$message({
+                                message: '批量删除成功！',
+                                type: 'success'
+                            });
+                            this.getUserForm()
+                        }
+                    }).catch(error => {
+                        console.error("请求失败" + error)
+                    })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+            });
         },
         // 搜索
         search() {
@@ -184,13 +201,12 @@ export default {
         editUser(userId) {
             this.$axios.post(`/user/updateUser?userId=${userId}&username=${this.editForm.username}&userPassword=${this.editForm.userPassword}&score=${this.editForm.userScore}`)
                 .then(res => {
-                    console.log(res)
                     if (res.status === 200) {
                         this.$message({
                             message: '用户编辑成功！',
                             type: 'success'
                         });
-                        this.dialogEditFormVisible=false;
+                        this.dialogEditFormVisible = false;
                         this.getUserForm();
                     }
                 })
