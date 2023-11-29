@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 Vue.use(ElementUI)
-const axiosInstance = Axios.create({
+const axiosInstance = Axios.create({ 
   baseURL: 'http://localhost:8090', 
 });
 Vue.prototype.$axios = axiosInstance;
